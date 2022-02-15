@@ -5,6 +5,9 @@
     CANVAS SET UP
 ------------------------------------------------------------------ */
 
+// FIXME: handling multiple canvases
+// QUESTION: do we need to keep 'use strict'??
+
 // initialize canvas
 const canvas = document.querySelector('#draw_space')
 const parent = document.querySelector(".drawing-page .container")
@@ -363,7 +366,7 @@ function split_tri(shape) {
     return split
 }
 
-function pointsToString(points) {
+function points_to_string(points) {
     let str = ''
 
     for (let i = 0; i < points.length; i++)
@@ -372,13 +375,32 @@ function pointsToString(points) {
     return str
 }
 
+function draw_guidelines() {
+    c.strokeStyle = '#555'
+    c.lineWidth = 3
+    let sx = 30
+    c.beginPath()
+    c.moveTo(100, 120 + sx)
+    c.lineTo(canvas.width - 100, 120 + sx)
+    c.stroke()
+    c.beginPath()
+    c.moveTo(100, 240+sx)
+    c.lineTo(canvas.width - 100, 240 + sx)
+    c.stroke()
+    c.beginPath()
+    c.moveTo(100, 360+sx)
+    c.lineTo(canvas.width - 100, 360 + sx)
+    c.stroke()
+    c.strokeStyle = '#000'
+    c.lineWidth = 15
+}
+
 let ftext
 
 let ins_text = document.querySelector('#ins-text')
 
 // TODO: disable drawing after all analysis is done
-function analyze() {
-    //count = 20
+function analyze() { // TODO: collect? instruct? change name!
     c.strokeStyle = '#000'
     switch (count) {
         case 0:
@@ -392,112 +414,24 @@ function analyze() {
             circle = shapes
             Part.shape_to_parts(split_circle(circle), 'cir')
             ins_text.innerHTML = 'draw a letter <span style="font-family:monospace">x</span>'
+            draw_guidelines()
             break
         case 2:
-            ins_text.innerHTML = 'draw a letter <span style="font-family:monospace">x</span>'
+            draw_guidelines()
             let corners = get_corners(shapes.flat())
             let xh = corners.br.y - corners.tl.y
             let caph = 360 - 120
             x_height = xh * cap_height / caph
             break
+        case 3:
+            ins_text.innerHTML = 'redo or scroll to see font'
+            canvas_resize(0)
+            scrollTo('type')
+            update()
+            break
     }
-    console.log(count);
-    //count = 30
-    if (count < 3) {
-        clear_canvas()
-        reset_shapes()
-        c.lineWidth = 15
-        ++count
-        if (count == 2) {
-            c.strokeStyle = '#555'
-            c.lineWidth = 3
-            let sx = 30
-            c.beginPath()
-            c.moveTo(100, 120 + sx)
-            c.lineTo(canvas.width - 100, 120+sx)
-            c.stroke()
-            c.beginPath()
-            c.moveTo(100, 240+sx)
-            c.lineTo(canvas.width - 100, 240+sx)
-            c.stroke()
-            c.beginPath()
-            c.moveTo(100, 360+sx)
-            c.lineTo(canvas.width - 100, 360+sx)
-            c.stroke()
-            c.strokeStyle = '#000'
-            c.lineWidth = 15
-        }
-        //return
-    }
-
-    if (count == 3) {
-        ins_text.innerHTML = 'redo or scroll to see font'
-        canvas_resize(0)
-        //window.scrollTo(0, innerHeight * 1.5)
-        scrollTo('type')
-        update()
-        count++
-    }
-
-    if (count > 0) return
-
-    if (count > 29) {
-        console.log(parts);
-        let dy = 100
-        for (let i in parts) {
-            parts[i] = place(100, dy, [parts[i]])[0]
-            console.log(i);
-            parts[i].draw(15, canvas)
-            dy += 200
-        }
-        return
-    }
-
-    if (count > 21) {
-        //build_font().display()
-        return
-    }
-
-    // ftext = new Font({
-    //     chars: {
-    //         'A': {code: 65, char: String.fromCharCode(65),
-    //             type: 'uletter',
-    //             shape: A() },
-    //         'B': {code: 66, char: String.fromCharCode(66),
-    //             type: 'uletter',
-    //             shape: B() },
-    //         'C': {code: 67, char: String.fromCharCode(67),
-    //             type: 'uletter',
-    //             shape: C() },
-    //     },
-    //     weight: 15
-    // })
-    //
-    count++
-
-    //if (count > 2) return
 
     clear_canvas()
-    c.strokeStyle = '#f00'
-    let letters = [A(), a(), B(), b(), C(), c_(), D(), d(), E(), e(), F(), f(), G(), g(), H(), h(), I(), i(), J(), j(), K(), k(), L(), l(), M(), m(), N(), n(), O(), o(), P(), p(), Q(), q(), R(), r(), S(), s(), T(), t(), U(), u(), V(), v(), W(), w(), X(), x(), Y(), y(), Z(), z(), zero(), one(), two(), three(), four(), five(), six(), seven(), eight(), nine(), period(), comma(), colon(), semi_colon(), hyphen(), underscore(), exclamation(), question(), left_paren(), right_paren(), left_bracket(), right_bracket(), bar(), for_slash(), back_slash(), less_than(), greater_than(), percent(), dollar(), plus(), emdash(), apostrophe(), quote_mark(), hash_sign()]
-
-    for (let i = 0, x = 150, y = 100, corners = {}; i < letters.length; ++i) {
-        y = (x > canvas.width - 500) ? y + 300 : y
-        x = (x > canvas.width - 500) ? 150 : x + i
-        if (i > 0 && x > 150) {
-            corners = get_corners(letters[i-1].map(part => part.points).flat())
-            x += corners.br.x - corners.bl.x + 100
-        } else x = 150
-
-        //letters[i] = adjust_height(100, letters[i])
-        letters[i] = place(x, y, letters[i])
-
-        letters[i].forEach(part => {
-            part.draw(15, canvas)
-        })
-    }
-
-
     reset_shapes()
     ++count
 }
@@ -505,7 +439,6 @@ function analyze() {
 let parts = {}
 
 class Part {
-
     constructor(o) {
         this.name = o.name
         this._points = o.points
@@ -536,8 +469,6 @@ class Part {
             let slopes = shape.map((p, i) => [slope(p[0], p[p.length - 1]), i])
                     .filter(o => o[0])
                     .sort((a, b) => a[0] - b[0])
-
-            //console.log(slopes);
 
             let a1 = new Part({name: 'A1', points: shape[slopes[0][1]]}),
                 base = new Part({name: 'base', points: shape[slopes[1][1]]}),
@@ -571,6 +502,7 @@ class Part {
     FONT BUILDING
 ------------------------------------------------------------------ */
 
+// mapping char_descr to respective char
 function build_font() {
     let chars = Font.gen_chars()
     let shapes = {
@@ -592,9 +524,8 @@ function build_font() {
         's': s(), 't': t(), 'u': u(), 'v': v(), 'w': w(), 'x': x(), 'y': y(),
         'z': z(), '{': [], '|': bar(), '}': [], '~': []}
 
-    for (let ch in shapes) {
+    for (let ch in shapes)
         chars[ch].shape = shapes[ch]
-    }
 
     return new Font({chars: chars, weight: mouse.weight})
 }
@@ -618,19 +549,6 @@ class Font {
                 console.warn('\'' + char_array[i].char + '\'', 'missing');
                 continue
             }
-            // dy = (dx > ccanvas.width - 400) ? dy + 150 : dy
-            // dx = (dx > ccanvas.width - 400) ? 100 : dx + 1
-            // if (i > 0 && dx > 100) {
-            //     corners = get_corners(last.shape.map(part => part.points).flat())
-            //     dx += corners.br.x - corners.bl.x + this.weight * 3
-            // } else dx = 100
-            //
-            // //letters[i] = adjust_height(100, letters[i])
-            // char_array[i].shape = add_spacer(char_array[i].shape)
-            // char_array[i].shape = dilate_shape(this.size, char_array[i].shape)
-            // char_array[i].shape = place(dx, dy, char_array[i].shape)
-            // this.draw_char(char_array[i].char, ccanvas)
-            // last = char_array[i]
 
             if (i > 0 && !newline) {
                 dx += last + this.weight * 3 + 50
@@ -651,25 +569,19 @@ class Font {
             char_array[i].shape = dilate_shape(this.size, char_array[i].shape)
             char_array[i].shape = place(dx, dy, char_array[i].shape)
             this.draw_char(char_array[i].char, ccanvas)
-            // corners = get_corners(char_array[i].shape.map(part => part.points).flat())
 
-            last = get_width(char_array[i].shape)//corners.br.x - corners.bl.x
+            last = get_width(char_array[i].shape)
             newline = (dx + last + this.weight * 3 + 350 > ccanvas.width)
 
             char_array[i].shape = dilate_shape(1/this.size, char_array[i].shape)
-            //count++
+
         }
-
-        // for (let i = 0; i < char_array.length; ++i) {
-        //     if (char_array[i].shape.length < 1) {
-        //         continue
-        //     }
-        //     char_array[i].shape = dilate_shape(1/this.size, char_array[i].shape)
-        // }
-
 
         return dy
     }
+
+    // QUESTION: may need to add async/await ??
+    // QUESTION: whats diff btw display and print can it be reduced?
 
     print(start, string, ccanvas) {
         let schars = string.split('')
@@ -690,14 +602,6 @@ class Font {
                 continue
             }
 
-            //dy = (dx > ccanvas.width - 500) ? dy + 150 : dy
-            //dx = (dx > ccanvas.width - 500) ? 150 : dx
-
-            // if ('j,;])'.includes(char_array[i].char))
-            //     shift = this.weight
-            // else if ('[('.includes(char_array[i].char))
-            //     shift = 0
-            // else shift = 0
 
             if (i > 0) {
                 dx += last + this.weight * 2 + 7 - shift
@@ -710,21 +614,10 @@ class Font {
             this.draw_char(char_array[i].char, ccanvas)
             corners = get_corners(char_array[i].shape.map(part => part.points).flat())
 
-            // if ('f[('.includes(char_array[i].char))
-            //     shift = this.weight
-            // else if ('jg])'.includes(char_array[i].char))
-            //     shift = 0
-            // else shift = 0
             last = corners.br.x - corners.bl.x - shift
             char_array[i].shape = dilate_shape(1/this.size, char_array[i].shape)
         }
 
-        // for (let i = 0; i < char_array.length; ++i) {
-        //     if (schars[i] == ' ' || char_array[i].shape.length < 1) {
-        //         continue
-        //     }
-        //     char_array[i].shape = dilate_shape(1/this.size, char_array[i].shape)
-        // }
         return dx
     }
 
@@ -764,10 +657,8 @@ class Font {
 
 window.onkeydown = function(e) {
     if (e.metaKey) return
-    //if (e.keyCode === 191 || e.keyCode === 222) e.preventDefault()
     if (e.keyCode === 13) { // enter/return key
         e.preventDefault()
-        //analyze()
         return
     }
     if (e.keyCode == 8) {
@@ -782,54 +673,6 @@ window.onkeydown = function(e) {
         return false
     }
     if (count == 3) {
-        //console.log(e.keyCode, ftext.chars[e.keyCode]);
         build_font().draw_char(e.key, canvas)
     }
 }
-
-
-function imageToBinary(image) {
-    let outerArray = [], innerArray = []
-    for (let i = 3; i < image.data.length; i += 4) {
-        if ((i + 1) % (image.width * 4) === 0) {
-            outerArray.push(innerArray)
-            innerArray = []
-        }
-        innerArray.push((image.data[i] > 0) ? 1 : 0)
-    }
-    return outerArray
-}
-
-function binaryToPoints(image) {
-    let array = []
-
-    for (let i = 0; i < image.length; i += 15)
-        for (let j = 0; j < image[0].length; j += 15)
-            if (image[i][j] == 1) array.push({x: j, y: i})
-
-    return array
-}
-
-function pixelate() {
-    let img = c.getImageData(0, 0, canvas.width, canvas.height)
-    let shape = binaryToPoints(imageToBinary(img))
-    clear_canvas()
-
-    let points = shape
-    let style = 'square'
-    for (let i = 0; i < points.length; i++) {
-        c.beginPath()
-        c.lineWidth = 15
-        if (style == 'circle')
-            c.arc(points[i].x, points[i].y, 1, 0, 2 * Math.PI)
-        else if (style == 'square') {
-            c.lineJoin = 'miter'
-            c.rect(points[i].x, points[i].y, 1, 1)
-        }
-        c.closePath()
-        c.stroke()
-
-    }
-}
-
-//window.onload = analyze()

@@ -1,4 +1,6 @@
 
+// TODO: reorganize to have all non-character functions in other file
+
 let x_height = 60
 let num_height = 100
 let cap_height = 130
@@ -101,17 +103,8 @@ const add_spacer = ((shape, height, down) => {
 
 function A() {
     let shape = V()
-    // shape[0] = adjust_height(cap_height, [shape[0]])[0]
-    // shape[1] = adjust_height(cap_height, [shape[1]])[0]
     let center = centroid(shape.map(part => part.points).flat())
     shape = rotate_shape(180, shape)
-
-    // let midline = new Part(parts.base)
-    // let y_shift = center.y - midline.points[0].y
-    // midline.points = translation(0, y_shift, midline.points)
-    //
-    //
-    // shape.push(midline)
 
     let midline = new Part(parts.base)
     let gap_width = get_width(shape) / 2
@@ -128,11 +121,6 @@ function A() {
 
 function a() {
     let shape = o()
-    // let center = centroid(shape.map(part => part.points).flat())
-    // shape.map(part => {
-    //     part.points = dilation(0.8, part.points, center)
-    //     return part
-    // })
 
     let tail = l()[0]
     center = centroid(tail.points)
@@ -148,10 +136,6 @@ function a() {
     shape.push(tail)
 
     shape = shape.flat()
-    // let corners = get_corners(shape.map(part => part.points).flat())
-    // let dy = cap_height - (corners.bl.y - corners.tl.y)
-    // shape.push(new Part({name: 'spacer',
-    //     points: [{x: corners.tl.x , y: corners.tl.y - dy}]}))
 
     return shape
 }
@@ -187,11 +171,6 @@ function b() {
         part.points = transformation(o => ({x: -o.x + corners.tr.x - corners.tl.x , y: o.y}), part.points)
         return part
     })
-
-    // let o = shape.slice(1)
-    // o = add_spacer(o, 0, true)
-    // //o.push(shape[0])
-    // shape = o
 
     return shape
 }
@@ -384,28 +363,6 @@ function g() {
 }
 
 function H() {
-    // let shape = [l(), l()]
-    // shape[0] = adjust_height(cap_height, shape[0])
-    // shape[1] = adjust_height(cap_height, shape[1])
-    // shape = shape.flat()
-    // let corners = get_corners(triangle.flat())
-    //
-    // let x_shift = shape[0].points[0].x - corners.tl.x
-    // shape[0].points = translation(x_shift - 15, 0, shape[0].points)
-    // x_shift = shape[1].points[0].x - corners.tr.x
-    // shape[1].points = translation(x_shift + 15, 0, shape[1].points)
-    //
-    // let midline = new Part(parts.base)
-    // let gap_width = shape[1].points[0].x - shape[0].points[0].x
-    // let line_width = midline.points[midline.points.length - 1].x - midline.points[0].x
-    // midline.points = dilation(gap_width/line_width, midline.points, centroid(midline.points))
-    // let center = centroid(shape[0].points)
-    // let y_shift = center.y - midline.points[0].y
-    // x_shift = shape[0].points[0].x - midline.points[0].x
-    // midline.points = translation(x_shift, y_shift, midline.points)
-    //
-    // shape.push(midline)
-
     let shape = I()
 
     shape = rotate_shape(90, shape)
@@ -517,8 +474,6 @@ function K() {
     shape[1][1].points = translation(x_shift, y_shift, shape[1][1].points)
 
     shape = shape.flat()
-    // let corners = get_corners(shape.map(part => part.points).flat())
-    // shape = scale_shape(1, cap_height / (corners.br.y - corners.tl.y), shape)
 
     return adjust_height(cap_height, shape)
 }
@@ -659,11 +614,6 @@ function P() {
     let left_shift = pline.points[pline_len - 1].x - pcurve[1].points[pcurve[1].points.length - 1].x
     let top_line = top_point(pline.first, pline.last)
     pcurve = place(top_line.x, top_line.y, pcurve)
-
-    // pcurve.map(part => {
-    //     part.points = translation(left_shift, top_shift + 15, part.points)
-    //     return part
-    // })
 
     shape.push(pcurve)
 
@@ -1019,18 +969,7 @@ function two() {
 
     shape[3].points = rotation(-90, shape[3].points, centroid(shape[3].points))
 
-    // let curve_height = btm_point(shape[3].first, shape[3].last).y
-    //     - top_point(shape[3].first, shape[3].last).y
-    // let ky = num_height / (curve_height)
-    // shape[3].points = scale(
-    //         1, ky,
-    //         shape[3].points, centroid(shape[3].points))
-
-    // let corners = get_corners(shape[3].points)
-    // shape[3].points = scale(1.5, num_height / (2 * (corners.br.x - corners.tl.x)), shape[3].points)
-
     let base = z()[2]
-    //base.points = dilation(0.6, base.points, centroid(base.points))
     shape.push(base)
 
     let btm_o3 = btm_point(shape[1].first, shape[1].last)
@@ -1140,23 +1079,10 @@ function six() {
 
 function seven() {
     let shape = two().slice(3)
-    // let center = centroid(shape.map(part => part.points).flat())
-    // shape.map(part => {
-    //     part.points = rotation(180, part.points, center)
-    //     return part
-    // })
-
     shape = rotate_shape(180, shape)
-    // center = centroid(shape.map(part => part.points).flat())
-    // shape.map(part => {
-    //     part.points = scale(1, num_height / curve_height, part.points, center)
-    //     return part
-    // })
 
     let corners = get_corners(shape.map(part => part.points).flat())
     shape = scale_shape(1, num_height / (corners.br.y - corners.tl.y), shape)
-
-    // shape = adjust_height(num_height, shape)
 
     let f2 = new Part(parts.base)
     center = centroid(f2.points)
@@ -1279,7 +1205,6 @@ function comma() {
 function colon() {
     let shape = [period(), period()].flat()
 
-    //let x_height = 50
     shape[1].points = translation(0, x_height, shape[1].points)
 
     return shape
@@ -1288,7 +1213,6 @@ function colon() {
 function semi_colon() {
     let shape = [period(), comma().slice(0,1)].flat()
 
-    //let x_height = 50
     let top_comma = top_point(shape[1].first, shape[1].last)
     shape[0].points = translation(top_comma.x, top_comma.y, shape[0].points)
     shape[1].points = translation(0, x_height - 15, shape[1].points)
@@ -1301,7 +1225,6 @@ function semi_colon() {
 function percent() {
     let shape = [o(), l(), o()]
 
-    //let x_height = 50
     shape[0] = adjust_height(x_height / 2, shape[0])
     shape[1] = rotate_shape(45, shape[1])
     shape[2] = adjust_height(x_height / 2, shape[2])
@@ -1329,8 +1252,7 @@ function percent() {
 
 function dollar() {
     let shape = [S(), bar()]
-    shape[0] = adjust_height(num_height - 30, shape[0]) // TODO: change height
-    //shape[1] = adjust_height(num_height, shape[1])
+    shape[0] = adjust_height(num_height - 30, shape[0])
 
     let top_s = top_point(shape[0][4].first, shape[0][4].last)
     let top_l = top_point(shape[1][0].first, shape[1][0].last)
@@ -1390,7 +1312,7 @@ function plus() {
 }
 
 function emdash() {
-    return rotate_shape(90, adjust_height(num_height - 30, l())) // TODO: change height
+    return rotate_shape(90, adjust_height(num_height - 30, l()))
 }
 
 function apostrophe() {
@@ -1404,7 +1326,6 @@ function quote_mark() {
 
     shape[2].points = translation(30, 0, shape[2].points)
 
-    //shape = add_spacer(shape, 0, true)
     return shape
 }
 
