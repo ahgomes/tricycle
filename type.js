@@ -825,13 +825,14 @@ window.onbeforeunload = function () {
 }
 
 function redo() {
-    if (count == 0) clear_canvas()
-    if (count < 3) count--
-    else {
-        count = 0
+    if (count < 3) {
+        clear_canvas()
+        if (count == 2) draw_guidelines()
+    } else {
+        count = -1
+        analyze()
         canvas_resize(1)
     }
-    analyze()
 }
 
 function submit() {

@@ -402,28 +402,30 @@ let ins_text = document.querySelector('#ins-text')
 // TODO: disable drawing after all analysis is done
 function analyze() { // TODO: collect? instruct? change name!
     c.strokeStyle = '#000'
+    console.log(count);
     switch (count) {
-        case 0:
+        case -1:
             ins_text.innerHTML = 'draw a triangle'
+            break
+        case 0:
             triangle = shapes
             Part.shape_to_parts(split_shape(triangle), 'tri')
             ins_text.innerHTML = 'draw a circle'
+            clear_canvas()
             break
         case 1:
-            ins_text.innerHTML = 'draw a circle'
             circle = shapes
             Part.shape_to_parts(split_circle(circle), 'cir')
             ins_text.innerHTML = 'draw a letter <span style="font-family:monospace">x</span>'
+            clear_canvas()
             draw_guidelines()
             break
         case 2:
-            draw_guidelines()
             let corners = get_corners(shapes.flat())
             let xh = corners.br.y - corners.tl.y
             let caph = 360 - 120
             x_height = xh * cap_height / caph
-            break
-        case 3:
+            clear_canvas()
             ins_text.innerHTML = 'redo or scroll to see font'
             canvas_resize(0)
             scrollTo('type')
@@ -431,7 +433,6 @@ function analyze() { // TODO: collect? instruct? change name!
             break
     }
 
-    clear_canvas()
     reset_shapes()
     ++count
 }
