@@ -402,7 +402,6 @@ let ins_text = document.querySelector('#ins-text')
 // TODO: disable drawing after all analysis is done
 function analyze() { // TODO: collect? instruct? change name!
     c.strokeStyle = '#000'
-    console.log(count);
     switch (count) {
         case -1:
             ins_text.innerHTML = 'draw a triangle'

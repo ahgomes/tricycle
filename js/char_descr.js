@@ -1,4 +1,4 @@
-
+// FIXME: 6 and 9
 // TODO: reorganize to have all non-character functions in other file
 
 let x_height = 60
